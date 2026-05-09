@@ -1,0 +1,7 @@
+*.o
+!objects-x86_64/*.o
+!objects-i386/*.o
+.depend
+.DS_Store
+test_manual
+mybash
