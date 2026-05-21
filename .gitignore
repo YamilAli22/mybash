@@ -4,7 +4,8 @@
 .depend
 .DS_Store
 test_manual
+test_execute
 mybash
-*runner-command
-*runner-parsing
-*tests.log
+runner-command
+runner-parsing
+tests.log
