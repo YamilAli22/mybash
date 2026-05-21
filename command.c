@@ -49,6 +49,7 @@ void scommand_pop_front(scommand self) {
 
 void scommand_set_redir_in(scommand self, char * filename) {
     assert(self!=NULL);
+    free(self->redin);
     if (filename == NULL) {
         self->redin = NULL;
     }
@@ -57,6 +58,7 @@ void scommand_set_redir_in(scommand self, char * filename) {
 
 void scommand_set_redir_out(scommand self, char * filename) {
     assert(self!=NULL);
+    free(self->redout);
     if (filename == NULL) {
         self->redout = NULL;
     }
@@ -101,27 +103,27 @@ char * scommand_to_string(const scommand self) {
     for (unsigned int i=0; i<scommand_length(self); i++) {
         if (i>0) {
             temp = result; // esto es para guardar la referencia vieja
-            result = strmerge(result, " "); // aca result apunta a memoria nueva
+            result = strmerge(temp, " "); // aca result apunta a memoria nueva
             free(temp); // aca libero esa referencia vieja
         }
         temp = result;
-        result = strmerge(result, g_queue_peek_nth(self->cmd, i));
+        result = strmerge(temp, g_queue_peek_nth(self->cmd, i));
         free(temp);
     }
     if (self->redin!=NULL) {
         temp = result;
-        result = strmerge(result, " < ");
+        result = strmerge(temp, " < ");
         free(temp);
         temp = result;
-        result = strmerge(result, self->redin);
+        result = strmerge(temp, self->redin);
         free(temp);
     }
     if (self->redout!=NULL) {
         temp = result;
-        result = strmerge(result, " > ");
+        result = strmerge(temp, " > ");
         free(temp);
         temp = result;
-        result = strmerge(result, self->redout);
+        result = strmerge(temp, self->redout);
         free(temp);
     }
     return result;
@@ -199,17 +201,17 @@ char * pipeline_to_string(const pipeline self) {
     for (unsigned int i=0; i<pipeline_length(self); i++) {
         if (i>0) {
             temp = result;
-            result = strmerge(result, " | ");
+            result = strmerge(temp, " | ");
             free(temp);
         }
         temp = result;
         sc = scommand_to_string(g_queue_peek_nth(self->pipe, i));
-        result = strmerge(result, sc);
+        result = strmerge(temp, sc);
         free(temp);
     }
     if (!self->wait) {
         temp = result;
-        result = strmerge(result, " &");
+        result = strmerge(temp, " &");
         free(temp);
     }
     return result;

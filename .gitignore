@@ -5,3 +5,6 @@
 .DS_Store
 test_manual
 mybash
+*runner-command
+*runner-parsing
+*tests.log
