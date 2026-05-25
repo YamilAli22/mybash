@@ -44,7 +44,8 @@ void scommand_push_back(scommand self, char *arg) {
 
 void scommand_pop_front(scommand self) {
 	assert(self!=NULL && !scommand_is_empty(self));
-    g_queue_pop_head(self->cmd);
+    char *front = g_queue_pop_head(self->cmd);
+    free(front);
 }
 
 void scommand_set_redir_in(scommand self, char * filename) {
@@ -208,6 +209,7 @@ char * pipeline_to_string(const pipeline self) {
         sc = scommand_to_string(g_queue_peek_nth(self->pipe, i));
         result = strmerge(temp, sc);
         free(temp);
+        free(sc);
     }
     if (!self->wait) {
         temp = result;

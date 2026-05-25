@@ -3,6 +3,7 @@
 #include "builtin.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -10,6 +11,7 @@
 #include <assert.h>
 #include <signal.h>
 #include <errno.h>
+#include "tests/syscall_mock.h"
 
 /*
 Las siguientes dos funciones son para manejar los procesos zombies. Los procesos zombies ocurren cuando un proceso termino pero nunca se recolectaron sus exit code, 
@@ -29,33 +31,47 @@ void init_signal_handlers(void) {
     signal(SIGCHLD, sigchld_handler);
 }
 
+// TODO: CHEQUEAR ERRORES EN LAS SYSCALLS Y MANEJARLOS
+
 void execute_command(scommand s_cmd) {
     assert(s_cmd!=NULL);
     // caso donde el pipe tiene un solo comando y es interno
+    // char *string = scommand_to_string(s_cmd);
+    // printf("comando: %s\n", string);
     bool b_alone = builtin_is_internal(s_cmd);     
     if (b_alone) {
         builtin_run(s_cmd);
         return;
-    }
+     }
     unsigned int cmd_length = scommand_length(s_cmd);
     char **argv = malloc((cmd_length + 1) * sizeof(char *));
     char *filename_in = scommand_get_redir_in(s_cmd);
     char *filename_out = scommand_get_redir_out(s_cmd);
 
     for (unsigned int i = 0; i < cmd_length; ++i) {
-        argv[i] = scommand_front(s_cmd);
+        unsigned int length_cmd = strlen(scommand_front(s_cmd)) + 1;
+        argv[i] = malloc(length_cmd * sizeof(char));
+        strcpy(argv[i], scommand_front(s_cmd));
         scommand_pop_front(s_cmd);
     }
     argv[cmd_length] = NULL;
 
     // Todas estas syscalls deberian ser chequeadas en su valor de retorno
     if (filename_in != NULL) {
-        int fd = open(filename_in, O_RDONLY);
+        int fd = open(filename_in, O_RDONLY, 0);
+        if (fd == -1) {
+            perror(filename_in);
+            exit(EXIT_FAILURE);
+        }
         dup2(fd, STDIN_FILENO); // STDIN ahora apunta al archivo y dup2 hace el close internamente
         close(fd); // cierro el fd que cree con open porque ya no lo necesito
     }
     if (filename_out != NULL) {
         int fd = open(filename_out, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd == -1) {
+            perror(filename_out);
+            exit(EXIT_FAILURE);
+        }
         dup2(fd, STDOUT_FILENO);
         close(fd);
     }
@@ -108,10 +124,8 @@ void execute_pipeline(pipeline apipe) {
             execute_command(pipeline_front(apipe));
         }
         else { // padre
-            if (i!=num_cmds-1) {
-                close(fd[1]);
-            }
             if (i!=0) {
+                /* printf("padre iter %d: cierra read_fd=%d write_fd=%d\n", i, read_fd, write_fd); */
                 close(read_fd);
                 close(write_fd);
             }

@@ -7,6 +7,9 @@
 
 #include "command.h"
 
+void init_signal_handlers(void);
+
+void execute_command(scommand s_cmd);
 
 void execute_pipeline(pipeline apipe);
 /*

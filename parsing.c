@@ -11,7 +11,7 @@ static scommand parse_scommand(Parser p) {
     /* Devuelve NULL cuando hay un error de parseo */
     if (parser_at_eof(p)) {
         return NULL;
-        return NULL;}
+    }
     scommand cmd = scommand_new();
     arg_kind_t type;
     char *arg;
@@ -58,6 +58,7 @@ pipeline parse_pipeline(Parser p) {
     parser_skip_blanks(p);
     error = (cmd==NULL); /* Comando inválido al empezar */
     if (error) {
+        parser_garbage(p, &garbage);
         printf("Comando inválido\n");
         pipeline_destroy(result);
         return NULL;
