@@ -39,7 +39,7 @@ void builtin_run(scommand cmd) {
                 perror("chdir");
             }
         } else {
-            printf("builtin_run llamado con: %s\n", scommand_front(cmd));
+            // printf("builtin_run llamado con: %s\n", scommand_front(cmd));
             if (chdir(scommand_front(cmd)) == -1) { // voy al directorio que indica lo que devuelve scommand_front
                 perror("chdir");
             }

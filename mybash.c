@@ -8,14 +8,17 @@
 #include "parser.h"
 #include "parsing.h"
 
-char buffer[1024];
+char buff[1024];
+char hostname[256];
 
 static void show_prompt(void) {
-    char *cwd = getcwd(buffer, sizeof(buffer));
+    char *cwd = getcwd(buff, sizeof(buff));
+    gethostname(hostname, sizeof(hostname));
+    char *user = getenv("USER");
     if (cwd!=NULL) {
-        printf("mybash>%s ", cwd);
+        fprintf(stdout, "%s@%s:%s$ ", user, hostname, cwd);
     } else {
-        printf ("mybash> ");
+        fprintf (stdout, "%s@%s:$ ", user, hostname);
     }
     fflush (stdout);
 }
